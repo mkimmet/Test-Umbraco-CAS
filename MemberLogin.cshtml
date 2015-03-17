@@ -7,16 +7,17 @@
        string SITE_LOGIN_URL = "https://localhost/login"; //The url to this page
        string CAS_LOGIN_URL = "https://login.yourorganization.com/cas/login"; //your CAS login url
        string CAS_VALIDATE_URL = "https://login.yourorganization.com/cas/serviceValidate"; //Your CAS service validator URL
+       
+       /*Next Check if user is authenticated, if they are, redirect them to the page that they were trying to access,
+            right now it's just redirecting to a static page (secure-page), but we will need to change this */
     }
-
-        @*Check if user is authenticated, if they are, redirect them to the page that they were trying to access,
-            right now it's just redirecting to a static page (secure-page), but we will need to change this*@
         @if (User.Identity.IsAuthenticated)
         {
             HttpContext.Current.Response.Redirect("/secure-page");
         }
-            @* Check to see if there is a ticket query parameter, a ticket parameter this indicates that this is a 
-                reply from CAS and needs to be processed, if there is no ticket, then forward the user to CAS*@
+	    @* Check to see if there is a ticket query parameter, a ticket parameter this indicates that this is a 
+	        reply from CAS and needs to be processed, if there is no ticket, then forward the user to CAS*@
+                
         else if (Request.QueryString["ticket"] == null || Request.QueryString["ticket"] == "")
         {
             HttpContext.Current.Response.Redirect(CAS_LOGIN_URL + "?service=" + SITE_LOGIN_URL);
