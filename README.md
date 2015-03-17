@@ -1,5 +1,5 @@
 # Umbraco-CAS-Membership
-This is a down and dirty implementation of CAS with Umbraco for membership logins.  I'm sure there are better ways to implement CAS with umbraco, using the [CAS .NET module](https://wiki.jasig.org/display/casc/.net+cas+client) but I have not been able to figure it out in a way that is satisfactory.
+This is a down and dirty implementation of CAS with Umbraco for membership logins.  I'm sure there are better ways to implement CAS with umbraco, using the [CAS .NET module](https://wiki.jasig.org/display/casc/.net+cas+client) but I have not been able to figure it out in a way that is satisfactory.  I'm posting this even though it's pretty raw in case it helps other people with integrating CAS.  Please let me know if you have found a better way.
 
 ## How to Setup Umbraco with CAS for Memberships
 This walks you through setting up Umbraco with CAS for memberships only, not for the backend Umbraco admin logins.
