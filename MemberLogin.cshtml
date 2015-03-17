@@ -1,18 +1,18 @@
 @using System.Xml
 @{
-//Set your CAS site variables
-string SITE_LOGIN_URL = "https://localhost/login"; //The url to this page
-string CAS_LOGIN_URL = "https://login.yourorganization.com/cas/login"; //your CAS login url
-string CAS_VALIDATE_URL = "https://login.yourorganization.com/cas/serviceValidate"; //Your CAS service validator URL
-string DEFAULT_PAGE = "/home"; //this is where to send people if they are already logged on.
-/* Next check if user is already authenticated, if they are, redirect them to some other page, 
-they don't need to be here */
+           //Set your CAS site variables
+           string SITE_LOGIN_URL = "https://localhost/login"; //The url to this page
+           string CAS_LOGIN_URL = "https://login.yourorganization.com/cas/login"; //your CAS login url
+           string CAS_VALIDATE_URL = "https://login.yourorganization.com/cas/serviceValidate"; //Your CAS service validator URL
+           string DEFAULT_PAGE = "/home"; //this is where to send people if they are already logged on.
+           /* Next check if user is already authenticated, if they are, redirect them to some other page, 
+           they don't need to be here */
 }
 @if (User.Identity.IsAuthenticated)
 {
            /*Replace "home" with whatever you want, this is to just prevent someone 
              who is already logged in from going through this process again */
-    HttpContext.Current.Response.Redirect("/home"); 
+           HttpContext.Current.Response.Redirect("/home"); 
 }
     @* Check to see if there is a ticket query parameter, a ticket parameter indicates that this is a 
         reply from CAS and needs to be processed, if there is no ticket, then forward the user to CAS*@
@@ -20,20 +20,21 @@ they don't need to be here */
 else if (Request.QueryString["ticket"] == null || Request.QueryString["ticket"] == "")
 {
          //Forward to CAS, also include the url parameter which is the page they were trying to access
-    HttpContext.Current.Response.Redirect(CAS_LOGIN_URL + "?service=" + SITE_LOGIN_URL + "?url=" + HttpContext.Current.Request.Url.ToString());
+           HttpContext.Current.Response.Redirect(CAS_LOGIN_URL + "?service=" + SITE_LOGIN_URL + "?url=" + HttpContext.Current.Request.Url.ToString());
 }
 else {
       //Check the ticket parameter with CAS to make sure it's real and get the users username
       //query CAS with the ticket
-      string url = CAS_VALIDATE_URL + "?service=" + SITE_LOGIN_URL + "?url=" + Request.QueryString["url"] + "&ticket=" + Request.QueryString["ticket"];	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-Stream stream = response.GetResponseStream();
-StreamReader reader = new StreamReader(stream);
+      string url = CAS_VALIDATE_URL + "?service=" + SITE_LOGIN_URL + "?url=" + Request.QueryString["url"] + "&ticket=" + Request.QueryString["ticket"];	
+      HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);           
+      HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+      Stream stream = response.GetResponseStream();
+      StreamReader reader = new StreamReader(stream);
 
-string data = reader.ReadToEnd();
+      string data = reader.ReadToEnd();
 
-reader.Close();
-stream.Close();
+      reader.Close();
+      stream.Close();
 
     /*
      A successful reply from CAS looks like:
