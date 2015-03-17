@@ -27,14 +27,14 @@
             //query CAS : 
             string url = CAS_VALIDATE_URL + "?service=" + SITE_LOGIN_URL + "&ticket=" + Request.QueryString["ticket"];
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-      		  HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-    		    Stream stream = response.GetResponseStream();
-     		    StreamReader reader = new StreamReader(stream);
-      
-     		    string data = reader.ReadToEnd();
-     
-     		    reader.Close();
-     		    stream.Close();
+  		    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+		    Stream stream = response.GetResponseStream();
+ 		    StreamReader reader = new StreamReader(stream);
+  
+ 		    string data = reader.ReadToEnd();
+ 
+ 		    reader.Close();
+ 		    stream.Close();
 
             /*
               
