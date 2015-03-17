@@ -10,9 +10,13 @@ Step one is to create a new page in the Umbraco Admin for your login page.
 Then edit the layout view for this page and replace the code with the code from MembershipLogin.cshtml
 
 In the code, replace the 4 variables at the top with your own site and CAS settings:
+
 string SITE_LOGIN_URL = "https://localhost/login"; //The url to this page
+
 string CAS_LOGIN_URL = "https://login.yourorganization.com/cas/login"; //your CAS login url
+
 string CAS_VALIDATE_URL = "https://login.yourorganization.com/cas/serviceValidate"; //Your CAS service validator URL
+
 string DEFAULT_PAGE = "/home"; //this is where to send people if they are already logged on.
 
 Currently if there is an error the error details are just posted to the login page.  If you want to redirect to a different page in the event of an error you will need todo this yourself.
