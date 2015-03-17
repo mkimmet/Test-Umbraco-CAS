@@ -2,81 +2,85 @@
 
 <div class="container center_div">
     <div class="row col-sm-12">
-    @{
-       //Set your CAS site variables
-       string SITE_LOGIN_URL = "https://localhost/login"; //The url to this page
-       string CAS_LOGIN_URL = "https://login.yourorganization.com/cas/login"; //your CAS login url
-       string CAS_VALIDATE_URL = "https://login.yourorganization.com/cas/serviceValidate"; //Your CAS service validator URL
-       
-       /*Next Check if user is authenticated, if they are, redirect them to the page that they were trying to access,
-            right now it's just redirecting to a static page (secure-page), but we will need to change this */
-    }
-        @if (User.Identity.IsAuthenticated)
-        {
-            HttpContext.Current.Response.Redirect("/secure-page");
-        }
-	    @* Check to see if there is a ticket query parameter, a ticket parameter this indicates that this is a 
+      @{
+	//Set your CAS site variables
+	string SITE_LOGIN_URL = "https://localhost/login"; //The url to this page
+	string CAS_LOGIN_URL = "https://login.yourorganization.com/cas/login"; //your CAS login url
+	string CAS_VALIDATE_URL = "https://login.yourorganization.com/cas/serviceValidate"; //Your CAS service validator URL
+	
+	/* Next check if user is already authenticated, if they are, redirect them to some other page, 
+	they don't need to be here */
+      }
+      @if (User.Identity.IsAuthenticated)
+      {
+       	    /*Replace "home" with whatever you want, this is to just prevent someone 
+       	      who is already logged in from going through this process again */
+            HttpContext.Current.Response.Redirect("/home"); 
+      }
+	    @* Check to see if there is a ticket query parameter, a ticket parameter indicates that this is a 
 	        reply from CAS and needs to be processed, if there is no ticket, then forward the user to CAS*@
                 
-        else if (Request.QueryString["ticket"] == null || Request.QueryString["ticket"] == "")
-        {
-            HttpContext.Current.Response.Redirect(CAS_LOGIN_URL + "?service=" + SITE_LOGIN_URL);
-        }
-        else {
-            //Check the ticket parameter with CAS to make sure it's real and get the users username
+      else if (Request.QueryString["ticket"] == null || Request.QueryString["ticket"] == "")
+      {
+     	    //Forward to CAS, also include the url parameter which is the page they were trying to access
+            HttpContext.Current.Response.Redirect(CAS_LOGIN_URL + "?service=" + SITE_LOGIN_URL + "?url=" + HttpContext.Current.Request.Url.ToString());
+      }
+      else {
+      	//Check the ticket parameter with CAS to make sure it's real and get the users username
+      	//query CAS with the ticket
+      	string url = CAS_VALIDATE_URL + "?service=" + SITE_LOGIN_URL + "?url=" + Request.QueryString["url"] + "&ticket=" + Request.QueryString["ticket"];	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+	HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+	Stream stream = response.GetResponseStream();
+	StreamReader reader = new StreamReader(stream);
+	
+	string data = reader.ReadToEnd();
+	
+	reader.Close();
+	stream.Close();
 
-            //query CAS : 
-            string url = CAS_VALIDATE_URL + "?service=" + SITE_LOGIN_URL + "&ticket=" + Request.QueryString["ticket"];
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-  		    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-		    Stream stream = response.GetResponseStream();
- 		    StreamReader reader = new StreamReader(stream);
-  
- 		    string data = reader.ReadToEnd();
- 
- 		    reader.Close();
- 		    stream.Close();
-
-            /*
-              
-             A successful reply from CAS looks like:
-             <cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'> <cas:authenticationSuccess> <cas:user>jsmith</cas:user> </cas:authenticationSuccess> </cas:serviceResponse>
-             ***** So you can parse this for cas:user and if this exists then CAS was successful and this is a username
-            */
-
-            <text> @data </text>
-
-            //I couldn't figure out how to deal with the cas: namespace, so I'm just deleting it
-
-            data = data.Replace("cas:", "");
-            <text> @data </text>
-            
-            try { 
-                XmlDocument xml = new XmlDocument();
-                xml.LoadXml(data);
-                XmlNode NetIDNode = xml.SelectSingleNode("/serviceResponse/authenticationSuccess/user");
-                string username = "";
-                netid = usernameNode.InnerText;
-                <text> username : @usernameNode.InnerText</text>
-            
-            
-                if (username != null && username != "")
-                {
-                    //Login was successfull, so log them in with their username
-                    FormsAuthentication.SetAuthCookie(username, true);
-                    <text>SUCCESFULL LOGIN - @username</text>
-                }else
-                {
-                    <text>ERROR - There was a problem with the login process</text>
-                }
-            }
-            catch (Exception ex)
-            {
-                //If there is a problem then the user is not logged in
-                //Show an error Screen
-                <text>ERROR - @ex.Message</text>
-            }
-            <p class="field-validation-error">@TempData["Status"]</p>
+	    /*
+	     A successful reply from CAS looks like:
+	     <cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'> 
+	     	<cas:authenticationSuccess>
+	     		<cas:user>jsmith</cas:user> 
+	     	</cas:authenticationSuccess> 
+	     </cas:serviceResponse>	     
+	     ***** So you can parse this for cas:user and if this exists then CAS was successful and this is a username
+	    */
+	    
+	    //  If you need to test the response use: <text> @data </text>
+	
+	    //I didn't want to bother with using the cas namespace so I'm just deleting it.
+	    data = data.Replace("cas:", "");
+	    
+	    try {
+	    	//Load up the xml response from CAS
+	        XmlDocument xml = new XmlDocument();
+	        xml.LoadXml(data);
+	        XmlNode NetIDNode = xml.SelectSingleNode("/serviceResponse/authenticationSuccess/user");
+	        string username = "";
+	        username = usernameNode.InnerText;
+	        //For testing: <text> username : @usernameNode.InnerText</text>
+	    
+	    	//check to see if a username was returned
+	        if (username != null && username != "")
+	        {
+	            //Login was successfull, so log them in with their username
+	            FormsAuthentication.SetAuthCookie(username, true);
+	            //Redirect them to the page they were trying to see
+	            HttpContext.Current.Response.Redirect(Request.QueryString["url"]);
+	        }else
+	        {
+	            //There was an error, redirect them to an error page, or tell them of an error.
+	            <text>ERROR - There was a problem with the login process</text>
+	        }
+	    }
+	    catch (Exception ex)
+	    {
+	        //If there is a problem then the user is not logged in
+	        //Show an error Screen or redirect the user 
+	        <text>ERROR - @ex.Message</text>
+	    }
         } 
-        </div>
-    </div>
+     </div>
+ </div>
